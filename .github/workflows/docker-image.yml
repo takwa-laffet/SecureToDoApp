@@ -1,0 +1,54 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-secure:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Get project code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install bandit safety
+
+      # 4. Security scan - Bandit (code vulnerabilities)
+      - name: Run Bandit scan
+        run: bandit -r app.py
+
+      # 5. Security scan - Safety (dependencies vulnerabilities)
+      - name: Run Safety scan
+        run: safety check --full-report
+
+      # 6. Build Docker image
+      - name: Build Docker image
+        run: docker build -t securetodoapp .
+
+      # (Optional) 7. Push Docker image to DockerHub
+      - name: Login to DockerHub
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag securetodoapp ${{ secrets.DOCKERHUB_USERNAME }}/securetodoapp:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/securetodoapp:latest
