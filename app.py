@@ -3,7 +3,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Simuler une base de données en mémoire
+# Simple in-memory storage
 todos = []
 
 @app.route('/todos', methods=['GET'])
@@ -29,4 +29,5 @@ def delete_todo(todo_id):
     return jsonify({"message": "Supprimé"}), 200
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    # Bind to all interfaces for Docker/K8s
+    app.run(host="0.0.0.0", port=5000)  # nosec B104
