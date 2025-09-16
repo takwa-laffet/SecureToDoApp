@@ -39,7 +39,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t securetodoapp .
 
-      # (Optional) 7. Push Docker image to DockerHub
+      #  7. Push Docker image to DockerHub
       - name: Login to DockerHub
         if: github.ref == 'refs/heads/main'
         uses: docker/login-action@v2
